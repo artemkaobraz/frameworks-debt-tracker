@@ -1,0 +1,12 @@
+[
+  {
+    "student_id": "1",
+    "discipline": "Математический анализ",
+    "retake_date": "2026-09-25"
+  },
+  {
+    "student_id": "2",
+    "discipline": "Информатика",
+    "retake_date": "2026-09-28"
+  }
+]
