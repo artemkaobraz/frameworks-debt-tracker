@@ -1,43 +1,55 @@
 import pytest
 
-from debts import add_debt
-from debts import close_debt
-from debts import count_debts
-from debts import get_debt_status
-from debts import has_debt
+from models import Debt, Discipline, Student
+from models.debts import add_debt
+from models.debts import close_debt
+from models.debts import count_debts
+from models.debts import get_debt_status
+from models.debts import get_students_with_debts_more_than
+from models.debts import get_worst_student
+from models.debts import has_debt
+
+
+def test_debt_attributes_relations_string_and_close() -> None:
+    student = Student("1", "Иванов Иван", "ПИ-21")
+    discipline = Discipline("1", "Математика")
+    debt = Debt("1", student, discipline, "2026-09-01")
+    assert debt.student is student
+    assert debt.discipline is discipline
+    assert "Иванов Иван" in str(debt)
+    debt.close()
+    assert debt.is_closed is True
+    assert debt.closed_at is not None
+    with pytest.raises(ValueError):
+        debt.close()
 
 
 def test_add_check_and_close_debt() -> None:
+    student = Student("1", "Иванов Иван", "ПИ-21")
+    discipline = Discipline("1", "Математика")
     debts = []
-
-    debt = add_debt(debts, 1, "Математика", "2026-09-01")
-
-    assert debt["status"] == "open"
-    assert has_debt(debts, "1", "математика") is True
-    assert get_debt_status("1", "Математика", debts) == "open"
-    assert close_debt(debts, 1, "Математика") is True
-    assert has_debt(debts, "1", "Математика") is False
-    assert get_debt_status("1", "Математика", debts) == "closed"
-
-
-def test_add_debt_rejects_active_duplicate() -> None:
-    debts = []
-    add_debt(debts, 1, "Математика")
-
+    debt = add_debt(debts, student, discipline, "2026-09-01")
+    assert has_debt(debts, student, discipline) is True
+    assert get_debt_status(student, discipline, debts) == "open"
+    assert close_debt(debt) is True
+    assert get_debt_status(student, discipline, debts) == "closed"
     with pytest.raises(ValueError):
-        add_debt(debts, "1", "математика")
+        close_debt(debt)
 
 
-def test_count_debts_can_include_closed_records() -> None:
+def test_debt_collection_statistics() -> None:
+    first = Student("1", "Иванов Иван", "ПИ-21")
+    second = Student("2", "Петров Пётр", "ПИ-22")
+    math = Discipline("1", "Математика")
+    physics = Discipline("2", "Физика")
     debts = [
-        {
-            "student_id": "1",
-            "discipline": "Математика",
-            "status": "open",
-        },
-        {"student_id": "1", "discipline": "Физика", "status": "closed"},
-        {"student_id": "2", "discipline": "Химия", "status": "open"},
+        Debt("1", first, math, "2026-09-01"),
+        Debt("2", first, physics, "2026-09-02", True),
+        Debt("3", second, math, "2026-09-03"),
     ]
-
-    assert count_debts("1", debts) == 1
-    assert count_debts("1", debts, only_active=False) == 2
+    assert count_debts(first, debts) == 1
+    assert count_debts(first, debts, only_active=False) == 2
+    assert get_worst_student([first, second], debts) == "Иванов Иван"
+    assert get_students_with_debts_more_than(
+        [first, second], 0, debts
+    ) == ["Иванов Иван", "Петров Пётр"]
