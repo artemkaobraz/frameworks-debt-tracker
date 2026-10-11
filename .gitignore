@@ -4,3 +4,4 @@ agents.md
 __pycache__/
 .pytest_cache/
 *.py[cod]
+db.sqlite3

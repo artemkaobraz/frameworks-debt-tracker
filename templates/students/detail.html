@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ student.name }}{% endblock %}
+{% block content %}
+<h1>{{ student.name }}</h1>
+<p>ID {{ student.id }}</p>
+<p>Группа {{ student.group_number }}</p>
+<p>Активных задолженностей: {{ debt_count }}</p>
+<h2>Задолженности</h2>
+{% if student_debts %}
+<ul class="list">
+    {% for debt in student_debts %}
+    <li><a href="{% url 'debt_detail' debt.id %}">{{ debt.discipline.name }}</a> {% if debt.is_closed %}закрыта{% else %}активна{% endif %}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Задолженностей нет.</p>
+{% endif %}
+<a href="{% url 'students' %}" class="back">Список студентов</a>
+{% endblock %}

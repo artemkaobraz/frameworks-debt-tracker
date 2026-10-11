@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}DebtTrack: дисциплины{% endblock %}
+{% block content %}
+<h1>Дисциплины</h1>
+{% if disciplines %}
+<ul class="list">
+    {% for discipline in disciplines %}
+    <li>{{ discipline.name }}{% if discipline.teacher %}. {{ discipline.teacher }}{% endif %}{% if discipline.semester %}, {{ discipline.semester }} семестр{% endif %}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Дисциплины не найдены.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}DebtTrack: задолженности{% endblock %}
+{% block content %}
+<h1>Задолженности</h1>
+{% if debts %}
+<ul class="list">
+    {% for debt in debts %}
+    <li><a href="{% url 'debt_detail' debt.id %}">{{ debt.student.name }}, {{ debt.discipline.name }}</a> {% if debt.is_closed %}закрыта{% else %}активна{% endif %}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Задолженности не найдены.</p>
+{% endif %}
+{% endblock %}
