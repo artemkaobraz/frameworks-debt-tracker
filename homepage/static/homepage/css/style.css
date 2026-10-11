@@ -1,0 +1,120 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: #222;
+    background: #fff;
+    font: 16px/1.5 Arial, sans-serif;
+}
+
+header {
+    border-bottom: 1px solid #ddd;
+}
+
+.header-content,
+main,
+footer {
+    width: min(100% - 32px, 760px);
+    margin: 0 auto;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 64px;
+}
+
+nav,
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+main {
+    padding: 40px 0;
+}
+
+footer {
+    padding: 8px 0 24px;
+    color: #666;
+}
+
+h1,
+h2 {
+    line-height: 1.2;
+}
+
+h1 {
+    margin: 0 0 24px;
+}
+
+h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+}
+
+a {
+    color: #2457a6;
+}
+
+header a {
+    color: #222;
+    text-decoration: none;
+}
+
+.site-brand {
+    margin: 0;
+    font-size: 26px;
+}
+
+.button {
+    display: inline-block;
+    padding: 8px 12px;
+    border: 1px solid #2457a6;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.list li,
+.list-item {
+    padding: 16px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.list-item p {
+    margin: 4px 0;
+}
+
+.debt-status,
+.muted {
+    color: #666;
+}
+
+.debt-status {
+    margin-left: 8px;
+}
+
+.back {
+    display: inline-block;
+    margin-top: 24px;
+}
+
+@media (max-width: 560px) {
+    .header-content {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px 0;
+    }
+}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{% if debt %}Задолженность {{ debt.id }} | DebtTrack{% else %}Задолженность не найдена | DebtTrack{% endif %}{% endblock %}
+{% block content %}
+{% if debt %}
+<h1>Задолженность {{ debt.id }}</h1>
+<p>Студент: <a href="{% url 'students:detail' debt.student.id %}">{{ debt.student.name }}</a></p>
+<p>Дисциплина: {{ debt.discipline.name }}</p>
+<p>Дата: {{ debt.date_created }}</p>
+<p>Статус: {% include "debts/includes/debt_status.html" %}</p>
+{% else %}
+<h1>Задолженность не найдена</h1>
+<p>Задолженность с указанным идентификатором отсутствует.</p>
+{% endif %}
+<a href="{% url 'debts:list' %}" class="back">Список задолженностей</a>
+{% endblock %}

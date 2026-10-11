@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Задолженности | DebtTrack{% endblock %}
+{% block content %}
+<h1>Задолженности</h1>
+<p>Всего задолженностей: {{ debts|length }}</p>
+{% if debts %}
+<ul class="list">
+    {% for debt in debts %}
+    <li>
+        <a href="{% url 'debts:detail' debt.id %}">{{ debt.student.name }}, {{ debt.discipline.name }}</a>
+        {% include "debts/includes/debt_status.html" %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Задолженности не найдены.</p>
+{% endif %}
+{% endblock %}

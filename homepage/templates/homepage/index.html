@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% block title %}Главная | DebtTrack{% endblock %}
 {% block content %}
 <h1>DebtTrack</h1>
 <p>Система учёта академической задолженности.</p>
 <p>Просматривайте студентов, дисциплины и задолженности.</p>
 <div class="actions">
-    <a href="{% url 'students' %}" class="button">Студенты</a>
-    <a href="{% url 'debts' %}" class="button">Задолженности</a>
-    <a href="{% url 'disciplines' %}" class="button">Дисциплины</a>
+    <a href="{% url 'students:list' %}" class="button">Студенты</a>
+    <a href="{% url 'debts:list' %}" class="button">Задолженности</a>
+    <a href="{% url 'homepage:disciplines' %}" class="button">Дисциплины</a>
 </div>
 {% endblock %}

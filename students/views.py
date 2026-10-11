@@ -17,7 +17,7 @@ def students(request):
     ]
     return render(
         request,
-        "students/list.html",
+        "students/student_list.html",
         {"student_rows": student_rows},
     )
 
@@ -29,14 +29,19 @@ def student_detail(request, student_id):
         None,
     )
     if student is None:
-        return render(request, "students/not_found.html", status=404)
+        return render(
+            request,
+            "students/student_detail.html",
+            {"student": None},
+            status=404,
+        )
 
     student_debts = [
         debt for debt in debts_list if debt.student.id == student.id
     ]
     return render(
         request,
-        "students/detail.html",
+        "students/student_detail.html",
         {
             "student": student,
             "student_debts": student_debts,

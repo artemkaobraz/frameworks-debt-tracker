@@ -1,7 +1,8 @@
 {% extends "base.html" %}
-{% block title %}DebtTrack: дисциплины{% endblock %}
+{% block title %}Дисциплины | DebtTrack{% endblock %}
 {% block content %}
 <h1>Дисциплины</h1>
+<p>Всего дисциплин: {{ disciplines|length }}</p>
 {% if disciplines %}
 <ul class="list">
     {% for discipline in disciplines %}

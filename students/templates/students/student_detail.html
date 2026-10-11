@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{% if student %}{{ student.name }} | DebtTrack{% else %}Студент не найден | DebtTrack{% endif %}{% endblock %}
+{% block content %}
+{% if student %}
+<h1>{{ student.name }}</h1>
+<p>ID: {{ student.id }}</p>
+<p>Группа: {{ student.group_number }}</p>
+<p>Зачётная книжка: {{ student.record_book|default:"Не указана" }}</p>
+<p>Активных задолженностей: {{ debt_count }}</p>
+<h2>Задолженности</h2>
+{% if student_debts %}
+<ul class="list">
+    {% for debt in student_debts %}
+    <li>
+        <a href="{% url 'debts:detail' debt.id %}">{{ debt.discipline.name }}</a>
+        {% include "debts/includes/debt_status.html" %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Задолженностей нет.</p>
+{% endif %}
+{% else %}
+<h1>Студент не найден</h1>
+<p>Студент с указанным идентификатором отсутствует.</p>
+{% endif %}
+<a href="{% url 'students:list' %}" class="back">Список студентов</a>
+{% endblock %}

@@ -3,7 +3,10 @@ from django.urls import path
 from . import views
 
 
+app_name = "students"
+
+
 urlpatterns = [
-    path("", views.students, name="students"),
-    path("<str:student_id>/", views.student_detail, name="student_detail"),
+    path("", views.students, name="list"),
+    path("<str:student_id>/", views.student_detail, name="detail"),
 ]
