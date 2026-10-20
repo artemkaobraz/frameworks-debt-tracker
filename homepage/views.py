@@ -1,7 +1,11 @@
-from django.conf import settings
 from django.shortcuts import render
 
-from storage import load_data
+from db.database import get_connection
+
+
+DISCIPLINES_SQL = """
+SELECT id, name, teacher, semester FROM disciplines ORDER BY name
+"""
 
 
 def index(request):
@@ -9,7 +13,11 @@ def index(request):
 
 
 def disciplines(request):
-    _, disciplines_list, _, _ = load_data(settings.BASE_DIR / "data")
+    connection = get_connection()
+    try:
+        disciplines_list = connection.execute(DISCIPLINES_SQL).fetchall()
+    finally:
+        connection.close()
     return render(
         request,
         "homepage/disciplines.html",

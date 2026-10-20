@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Статистика | DebtTrack{% endblock %}
+{% block content %}
+<h1>Задолженности по студентам</h1>
+{% if statistics %}
+<ul class="list">
+    {% for item in statistics %}
+    <li>{{ item.student_name }}. Активных задолженностей: {{ item.debts_count }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Данные отсутствуют.</p>
+{% endif %}
+{% endblock %}

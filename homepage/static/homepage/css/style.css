@@ -17,7 +17,7 @@ header {
 .header-content,
 main,
 footer {
-    width: min(100% - 32px, 760px);
+    width: min(100% - 32px, 860px);
     margin: 0 auto;
 }
 

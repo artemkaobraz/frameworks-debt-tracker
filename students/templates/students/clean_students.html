@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Без задолженностей | DebtTrack{% endblock %}
+{% block content %}
+<h1>Студенты без активных задолженностей</h1>
+{% if students %}
+<ul class="list">
+    {% for student in students %}
+    <li>{{ student.name }}, {{ student.group_number }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Таких студентов нет.</p>
+{% endif %}
+<a href="{% url 'students:list' %}" class="back">Список студентов</a>
+{% endblock %}

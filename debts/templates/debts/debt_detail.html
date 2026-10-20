@@ -3,8 +3,8 @@
 {% block content %}
 {% if debt %}
 <h1>Задолженность {{ debt.id }}</h1>
-<p>Студент: <a href="{% url 'students:detail' debt.student.id %}">{{ debt.student.name }}</a></p>
-<p>Дисциплина: {{ debt.discipline.name }}</p>
+<p>Студент: <a href="{% url 'students:detail' debt.student_id %}">{{ debt.student_name }}</a></p>
+<p>Дисциплина: {{ debt.discipline_name }}</p>
 <p>Дата: {{ debt.date_created }}</p>
 <p>Статус: {% include "debts/includes/debt_status.html" %}</p>
 {% else %}

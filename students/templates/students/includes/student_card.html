@@ -1,6 +1,6 @@
 <article class="list-item">
     <h2>{{ student.name|default:"Без имени" }}</h2>
     <p>Группа: {{ student.group_number }}</p>
-    <p>Задолженностей: {{ debts_count }}</p>
+    <p>Активных задолженностей: {{ student.debts_count }}</p>
     <a href="{% url 'students:detail' student.id %}">Подробнее</a>
 </article>
