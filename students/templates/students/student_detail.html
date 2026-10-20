@@ -12,7 +12,7 @@
 <ul class="list">
     {% for debt in student_debts %}
     <li>
-        <a href="{% url 'debts:detail' debt.id %}">{{ debt.discipline.name }}</a>
+        <a href="{% url 'debts:detail' debt.id %}">{{ debt.discipline_name }}</a>
         {% include "debts/includes/debt_status.html" %}
     </li>
     {% endfor %}

@@ -2,9 +2,9 @@
 {% block title %}Студенты | DebtTrack{% endblock %}
 {% block content %}
 <h1>Студенты</h1>
-<p>Всего студентов: {{ student_rows|length }}</p>
-{% for row in student_rows %}
-    {% include "students/includes/student_card.html" with student=row.student debts_count=row.debt_count %}
+<p>Всего студентов: {{ students|length }}</p>
+{% for student in students %}
+    {% include "students/includes/student_card.html" %}
 {% empty %}
 <p class="muted">Студенты не найдены.</p>
 {% endfor %}
