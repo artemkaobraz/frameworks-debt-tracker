@@ -7,6 +7,12 @@
 <p>Дисциплина: {{ debt.discipline.name }}</p>
 <p>Дата: {{ debt.date_created }}</p>
 <p>Статус: {% include "debts/includes/debt_status.html" %}</p>
+{% if not debt.is_closed %}
+<form method="post" action="{% url 'debts:close' debt.id %}">
+    {% csrf_token %}
+    <button type="submit">Закрыть задолженность</button>
+</form>
+{% endif %}
 {% else %}
 <h1>Задолженность не найдена</h1>
 <p>Задолженность с указанным идентификатором отсутствует.</p>

@@ -1,25 +1,25 @@
-from datetime import date
-
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, UpdateView
 
 from students.models import Student
 
+from .forms import DebtFilterForm, DebtForm
 from .models import Debt
 
 
 class DebtCreateView(CreateView):
     model = Debt
-    fields = ["student", "discipline", "date_created", "is_closed"]
+    form_class = DebtForm
     template_name = "debts/debt_form.html"
     success_url = "/debts/"
 
 
 class DebtUpdateView(UpdateView):
     model = Debt
-    fields = ["student", "discipline", "date_created", "is_closed"]
+    form_class = DebtForm
     template_name = "debts/debt_form.html"
     success_url = "/debts/"
 
@@ -32,38 +32,37 @@ class DebtDeleteView(DeleteView):
 
 def debts(request):
     queryset = Debt.objects.select_related("student", "discipline")
-    query = request.GET.get("q", "").strip()
-    status = request.GET.get("status", "")
-    discipline = request.GET.get("discipline", "").strip()
-    student_id = request.GET.get("student_id", "").strip()
-    discipline_id = request.GET.get("discipline_id", "").strip()
-    date_from = request.GET.get("date_from", "").strip()
-    date_to = request.GET.get("date_to", "").strip()
-    if query:
-        queryset = queryset.filter(
-            Q(student__name__icontains=query)
-            | Q(discipline__name__icontains=query)
-        )
-    if status == "open":
-        queryset = queryset.open()
-    elif status == "closed":
-        queryset = queryset.closed()
-    if discipline:
-        queryset = queryset.filter(discipline__name__icontains=discipline)
-    if student_id.isdecimal() and len(student_id) <= 18:
-        queryset = queryset.filter(student_id=int(student_id))
-    if discipline_id.isdecimal() and len(discipline_id) <= 18:
-        queryset = queryset.filter(discipline_id=int(discipline_id))
-    for value, lookup in (
-        (date_from, "date_created__gte"),
-        (date_to, "date_created__lte"),
-    ):
-        try:
-            parsed_date = date.fromisoformat(value)
-        except ValueError:
-            continue
-        queryset = queryset.filter(**{lookup: parsed_date})
-    sort = request.GET.get("sort", "date")
+    filter_form = DebtFilterForm(request.GET or None)
+    sort = "date"
+    if filter_form.is_valid():
+        filters = filter_form.cleaned_data
+        query = filters["q"].strip()
+        if query:
+            queryset = queryset.filter(
+                Q(student__name__icontains=query)
+                | Q(discipline__name__icontains=query)
+            )
+        if filters["status"] == "open":
+            queryset = queryset.open()
+        elif filters["status"] == "closed":
+            queryset = queryset.closed()
+        if filters["discipline"]:
+            queryset = queryset.filter(
+                discipline__name__icontains=filters["discipline"].strip()
+            )
+        if filters["student_id"]:
+            queryset = queryset.filter(student_id=filters["student_id"])
+        if filters["discipline_id"]:
+            queryset = queryset.filter(
+                discipline_id=filters["discipline_id"]
+            )
+        if filters["date_from"]:
+            queryset = queryset.filter(
+                date_created__gte=filters["date_from"]
+            )
+        if filters["date_to"]:
+            queryset = queryset.filter(date_created__lte=filters["date_to"])
+        sort = filters["sort"] or sort
     ordering = {
         "date": ("date_created", "id"),
         "date_desc": ("-date_created", "-id"),
@@ -76,10 +75,7 @@ def debts(request):
     params.pop("page", None)
     return render(
         request, "debts/debt_list.html",
-        {"debts": page, "page": page, "query": query, "status": status,
-         "discipline": discipline, "sort": sort,
-         "student_id": student_id, "discipline_id": discipline_id,
-         "date_from": date_from, "date_to": date_to,
+        {"debts": page, "page": page, "filter_form": filter_form,
          "page_query": params.urlencode()},
     )
 
@@ -92,6 +88,15 @@ def debt_detail(request, debt_id):
         request, "debts/debt_detail.html", {"debt": debt},
         status=404 if debt is None else 200,
     )
+
+
+@require_POST
+def close_debt(request, debt_id):
+    debt = get_object_or_404(Debt, pk=debt_id)
+    if not debt.is_closed:
+        debt.is_closed = True
+        debt.save(update_fields=["is_closed"])
+    return redirect("debts:detail", debt_id=debt_id)
 
 
 def statistics(request):
