@@ -5,6 +5,10 @@
 <form method="get">
     <input name="q" value="{{ query }}" placeholder="Студент или дисциплина">
     <input name="discipline" value="{{ discipline }}" placeholder="Дисциплина">
+    <input name="student_id" value="{{ student_id }}" placeholder="ID студента">
+    <input name="discipline_id" value="{{ discipline_id }}" placeholder="ID дисциплины">
+    <label>С <input type="date" name="date_from" value="{{ date_from }}"></label>
+    <label>По <input type="date" name="date_to" value="{{ date_to }}"></label>
     <select name="status">
         <option value="">Все статусы</option>
         <option value="open" {% if status == "open" %}selected{% endif %}>Активные</option>
@@ -12,7 +16,9 @@
     </select>
     <select name="sort">
         <option value="date" {% if sort == "date" %}selected{% endif %}>По дате</option>
+        <option value="date_desc" {% if sort == "date_desc" %}selected{% endif %}>По дате (новые)</option>
         <option value="student" {% if sort == "student" %}selected{% endif %}>По студенту</option>
+        <option value="discipline" {% if sort == "discipline" %}selected{% endif %}>По дисциплине</option>
     </select>
     <button type="submit">Показать</button>
 </form>

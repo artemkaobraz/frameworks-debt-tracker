@@ -2,6 +2,7 @@
 {% block title %}Статистика | DebtTrack{% endblock %}
 {% block content %}
 <h1>Задолженности по студентам</h1>
+<p>Всего активных задолженностей: {{ total_debts }}</p>
 {% if statistics %}
 <ul class="list">
     {% for item in statistics %}
