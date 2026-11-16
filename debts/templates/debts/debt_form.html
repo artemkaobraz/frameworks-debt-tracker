@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Задолженность | DebtTrack{% endblock %}
+{% block content %}
+<h1>Задолженность</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Сохранить</button>
+</form>
+<a href="{% url 'debts:list' %}">Отмена</a>
+{% endblock %}

@@ -3,13 +3,14 @@
 {% block content %}
 {% if debt %}
 <h1>Задолженность {{ debt.id }}</h1>
-<p>Студент: <a href="{% url 'students:detail' debt.student_id %}">{{ debt.student_name }}</a></p>
-<p>Дисциплина: {{ debt.discipline_name }}</p>
+<p>Студент: <a href="{% url 'students:detail' debt.student_id %}">{{ debt.student.name }}</a></p>
+<p>Дисциплина: {{ debt.discipline.name }}</p>
 <p>Дата: {{ debt.date_created }}</p>
 <p>Статус: {% include "debts/includes/debt_status.html" %}</p>
 {% else %}
 <h1>Задолженность не найдена</h1>
 <p>Задолженность с указанным идентификатором отсутствует.</p>
 {% endif %}
+{% if debt %}<p><a href="{% url 'debts:edit' debt.id %}">Изменить</a> · <a href="{% url 'debts:delete' debt.id %}">Удалить</a></p>{% endif %}
 <a href="{% url 'debts:list' %}" class="back">Список задолженностей</a>
 {% endblock %}

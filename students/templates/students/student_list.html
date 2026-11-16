@@ -2,6 +2,17 @@
 {% block title %}Студенты | DebtTrack{% endblock %}
 {% block content %}
 <h1>Студенты</h1>
+<form method="get">
+    <input name="q" value="{{ query }}" placeholder="Поиск по имени">
+    <input name="group" value="{{ group }}" placeholder="Группа">
+    <input name="discipline" value="{{ discipline }}" placeholder="Дисциплина">
+    <select name="sort">
+        <option value="name" {% if sort == "name" %}selected{% endif %}>По имени</option>
+        <option value="debt_count" {% if sort == "debt_count" %}selected{% endif %}>По числу долгов</option>
+    </select>
+    <button type="submit">Показать</button>
+</form>
+<a href="{% url 'students:create' %}">Добавить студента</a>
 <p>Всего студентов: {{ students|length }}</p>
 {% for student in students %}
     {% include "students/includes/student_card.html" %}

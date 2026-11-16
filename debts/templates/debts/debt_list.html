@@ -2,17 +2,39 @@
 {% block title %}Задолженности | DebtTrack{% endblock %}
 {% block content %}
 <h1>Задолженности</h1>
-<p>Всего задолженностей: {{ debts|length }}</p>
+<form method="get">
+    <input name="q" value="{{ query }}" placeholder="Студент или дисциплина">
+    <input name="discipline" value="{{ discipline }}" placeholder="Дисциплина">
+    <select name="status">
+        <option value="">Все статусы</option>
+        <option value="open" {% if status == "open" %}selected{% endif %}>Активные</option>
+        <option value="closed" {% if status == "closed" %}selected{% endif %}>Закрытые</option>
+    </select>
+    <select name="sort">
+        <option value="date" {% if sort == "date" %}selected{% endif %}>По дате</option>
+        <option value="student" {% if sort == "student" %}selected{% endif %}>По студенту</option>
+    </select>
+    <button type="submit">Показать</button>
+</form>
+<a href="{% url 'debts:create' %}">Добавить задолженность</a>
+<p>Всего задолженностей: {{ page.paginator.count }}</p>
 {% if debts %}
 <ul class="list">
     {% for debt in debts %}
     <li>
-        <a href="{% url 'debts:detail' debt.id %}">{{ debt.student_name }}, {{ debt.discipline_name }}</a>
+        <a href="{% url 'debts:detail' debt.id %}">{{ debt.student.name }}, {{ debt.discipline.name }}</a>
         {% include "debts/includes/debt_status.html" %}
     </li>
     {% endfor %}
 </ul>
 {% else %}
 <p class="muted">Задолженности не найдены.</p>
+{% endif %}
+{% if page.has_other_pages %}
+<nav aria-label="Страницы">
+    {% if page.has_previous %}<a href="?{{ page_query }}&amp;page={{ page.previous_page_number }}">Назад</a>{% endif %}
+    <span>Страница {{ page.number }} из {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a href="?{{ page_query }}&amp;page={{ page.next_page_number }}">Далее</a>{% endif %}
+</nav>
 {% endif %}
 {% endblock %}

@@ -1,90 +1,80 @@
+from django.db.models import Count, Q
 from django.shortcuts import render
+from django.views.generic import CreateView, DeleteView, UpdateView
 
-from db.database import get_connection
+from .models import Student
 
 
-STUDENTS_SQL = """
-SELECT students.id, students.name, students.group_number,
-       COUNT(debts.id) AS debts_count
-FROM students
-LEFT JOIN debts ON students.id = debts.student_id AND debts.is_closed = 0
-GROUP BY students.id, students.name, students.group_number
-ORDER BY students.name
-"""
-STUDENT_SQL = """
-SELECT id, name, group_number, record_book FROM students WHERE id = ?
-"""
-STUDENT_DEBTS_SQL = """
-SELECT debts.id, disciplines.name AS discipline_name, debts.is_closed
-FROM debts
-JOIN disciplines ON debts.discipline_id = disciplines.id
-WHERE debts.student_id = ?
-ORDER BY debts.date_created, debts.id
-"""
-ACTIVE_DEBTS_COUNT_SQL = """
-SELECT COUNT(*) AS debts_count
-FROM debts
-WHERE student_id = ? AND is_closed = 0
-"""
-CLEAN_STUDENTS_SQL = """
-SELECT id, name, group_number
-FROM students
-WHERE id NOT IN (SELECT student_id FROM debts WHERE is_closed = 0)
-ORDER BY name
-"""
+class StudentCreateView(CreateView):
+    model = Student
+    fields = ["name", "group_number", "record_book"]
+    template_name = "students/student_form.html"
+    success_url = "/students/"
+
+
+class StudentUpdateView(UpdateView):
+    model = Student
+    fields = ["name", "group_number", "record_book"]
+    template_name = "students/student_form.html"
+    success_url = "/students/"
+
+
+class StudentDeleteView(DeleteView):
+    model = Student
+    template_name = "students/student_confirm_delete.html"
+    success_url = "/students/"
 
 
 def students(request):
-    connection = get_connection()
-    try:
-        students_list = connection.execute(STUDENTS_SQL).fetchall()
-    finally:
-        connection.close()
+    queryset = Student.objects.annotate(
+        debts_count=Count("debts", filter=Q(debts__is_closed=False))
+    )
+    query = request.GET.get("q", "").strip()
+    group = request.GET.get("group", "").strip()
+    discipline = request.GET.get("discipline", "").strip()
+    if query:
+        queryset = queryset.filter(name__icontains=query)
+    if group:
+        queryset = queryset.filter(group_number=group)
+    if discipline:
+        queryset = queryset.filter(
+            debts__discipline__name__icontains=discipline
+        ).distinct()
+    sort = request.GET.get("sort", "name")
+    ordering = {
+        "name": ("name", "id"),
+        "debt_count": ("-debts_count", "name", "id"),
+    }
+    queryset = queryset.order_by(*ordering.get(sort, ordering["name"]))
     return render(
-        request,
-        "students/student_list.html",
-        {"students": students_list},
+        request, "students/student_list.html",
+        {"students": queryset, "query": query, "group": group,
+         "discipline": discipline, "sort": sort},
     )
 
 
 def student_detail(request, student_id):
-    connection = get_connection()
-    try:
-        student = connection.execute(
-            STUDENT_SQL, (student_id,)
-        ).fetchone()
-        if student is None:
-            student_debts = []
-            debt_count = 0
-        else:
-            student_debts = connection.execute(
-                STUDENT_DEBTS_SQL, (student_id,)
-            ).fetchall()
-            debt_count = connection.execute(
-                ACTIVE_DEBTS_COUNT_SQL, (student_id,)
-            ).fetchone()["debts_count"]
-    finally:
-        connection.close()
+    student = Student.objects.filter(pk=student_id).first()
+    if student is None:
+        student_debts = []
+        debt_count = 0
+    else:
+        student_debts = student.debts.select_related("discipline").order_by(
+            "date_created", "id"
+        )
+        debt_count = student.debts.filter(is_closed=False).count()
     return render(
-        request,
-        "students/student_detail.html",
-        {
-            "student": student,
-            "student_debts": student_debts,
-            "debt_count": debt_count,
-        },
+        request, "students/student_detail.html",
+        {"student": student, "student_debts": student_debts,
+         "debt_count": debt_count},
         status=404 if student is None else 200,
     )
 
 
 def clean_students(request):
-    connection = get_connection()
-    try:
-        clean = connection.execute(CLEAN_STUDENTS_SQL).fetchall()
-    finally:
-        connection.close()
+    clean = Student.objects.exclude(
+        debts__is_closed=False
+    ).distinct().order_by("name", "id")
     return render(
-        request,
-        "students/clean_students.html",
-        {"students": clean},
+        request, "students/clean_students.html", {"students": clean}
     )

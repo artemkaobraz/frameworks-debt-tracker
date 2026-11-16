@@ -1,11 +1,27 @@
 from django.shortcuts import render
+from django.views.generic import CreateView, DeleteView, UpdateView
 
-from db.database import get_connection
+from .models import Discipline
 
 
-DISCIPLINES_SQL = """
-SELECT id, name, teacher, semester FROM disciplines ORDER BY name
-"""
+class DisciplineCreateView(CreateView):
+    model = Discipline
+    fields = ["name", "teacher", "semester"]
+    template_name = "homepage/discipline_form.html"
+    success_url = "/disciplines/"
+
+
+class DisciplineUpdateView(UpdateView):
+    model = Discipline
+    fields = ["name", "teacher", "semester"]
+    template_name = "homepage/discipline_form.html"
+    success_url = "/disciplines/"
+
+
+class DisciplineDeleteView(DeleteView):
+    model = Discipline
+    template_name = "homepage/discipline_confirm_delete.html"
+    success_url = "/disciplines/"
 
 
 def index(request):
@@ -13,15 +29,17 @@ def index(request):
 
 
 def disciplines(request):
-    connection = get_connection()
-    try:
-        disciplines_list = connection.execute(DISCIPLINES_SQL).fetchall()
-    finally:
-        connection.close()
+    queryset = Discipline.objects.all()
+    query = request.GET.get("q", "").strip()
+    semester = request.GET.get("semester", "").strip()
+    if query:
+        queryset = queryset.filter(name__icontains=query)
+    if semester.isdigit():
+        queryset = queryset.filter(semester=int(semester))
+    queryset = queryset.order_by("name", "id")
     return render(
-        request,
-        "homepage/disciplines.html",
-        {"disciplines": disciplines_list},
+        request, "homepage/disciplines.html",
+        {"disciplines": queryset, "query": query, "semester": semester},
     )
 
 

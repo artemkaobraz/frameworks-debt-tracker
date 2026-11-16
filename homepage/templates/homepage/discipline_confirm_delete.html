@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Удалить дисциплину | DebtTrack{% endblock %}
+{% block content %}
+<h1>Удалить дисциплину</h1>
+<p>{{ object.name }} и связанные задолженности будут удалены.</p>
+<form method="post">{% csrf_token %}<button type="submit">Удалить</button></form>
+<a href="{% url 'homepage:disciplines' %}">Отмена</a>
+{% endblock %}

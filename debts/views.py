@@ -1,67 +1,80 @@
+from django.core.paginator import Paginator
+from django.db.models import Count, Q
 from django.shortcuts import render
+from django.views.generic import CreateView, DeleteView, UpdateView
 
-from db.database import get_connection
+from students.models import Student
+
+from .models import Debt
 
 
-DEBTS_SQL = """
-SELECT debts.id, students.name AS student_name,
-       disciplines.name AS discipline_name, debts.date_created,
-       debts.is_closed
-FROM debts
-JOIN students ON debts.student_id = students.id
-JOIN disciplines ON debts.discipline_id = disciplines.id
-ORDER BY debts.date_created, debts.id
-"""
-DEBT_SQL = """
-SELECT debts.id, students.id AS student_id,
-       students.name AS student_name,
-       disciplines.name AS discipline_name, debts.date_created,
-       debts.is_closed
-FROM debts
-JOIN students ON debts.student_id = students.id
-JOIN disciplines ON debts.discipline_id = disciplines.id
-WHERE debts.id = ?
-"""
-STATISTICS_SQL = """
-SELECT students.name AS student_name, COUNT(debts.id) AS debts_count
-FROM students
-LEFT JOIN debts ON students.id = debts.student_id AND debts.is_closed = 0
-GROUP BY students.id, students.name
-ORDER BY debts_count DESC, students.name
-"""
+class DebtCreateView(CreateView):
+    model = Debt
+    fields = ["student", "discipline", "date_created", "is_closed"]
+    template_name = "debts/debt_form.html"
+    success_url = "/debts/"
+
+
+class DebtUpdateView(UpdateView):
+    model = Debt
+    fields = ["student", "discipline", "date_created", "is_closed"]
+    template_name = "debts/debt_form.html"
+    success_url = "/debts/"
+
+
+class DebtDeleteView(DeleteView):
+    model = Debt
+    template_name = "debts/debt_confirm_delete.html"
+    success_url = "/debts/"
 
 
 def debts(request):
-    connection = get_connection()
-    try:
-        debts_list = connection.execute(DEBTS_SQL).fetchall()
-    finally:
-        connection.close()
-    return render(request, "debts/debt_list.html", {"debts": debts_list})
+    queryset = Debt.objects.select_related("student", "discipline")
+    query = request.GET.get("q", "").strip()
+    status = request.GET.get("status", "")
+    discipline = request.GET.get("discipline", "").strip()
+    if query:
+        queryset = queryset.filter(
+            Q(student__name__icontains=query)
+            | Q(discipline__name__icontains=query)
+        )
+    if status in {"open", "closed"}:
+        queryset = queryset.filter(is_closed=status == "closed")
+    if discipline:
+        queryset = queryset.filter(discipline__name__icontains=discipline)
+    sort = request.GET.get("sort", "date")
+    ordering = {
+        "date": ("date_created", "id"),
+        "student": ("student__name", "date_created", "id"),
+    }
+    queryset = queryset.order_by(*ordering.get(sort, ordering["date"]))
+    page = Paginator(queryset, 10).get_page(request.GET.get("page"))
+    params = request.GET.copy()
+    params.pop("page", None)
+    return render(
+        request, "debts/debt_list.html",
+        {"debts": page, "page": page, "query": query, "status": status,
+         "discipline": discipline, "sort": sort,
+         "page_query": params.urlencode()},
+    )
 
 
 def debt_detail(request, debt_id):
-    connection = get_connection()
-    try:
-        debt = connection.execute(DEBT_SQL, (debt_id,)).fetchone()
-    finally:
-        connection.close()
+    debt = Debt.objects.select_related("student", "discipline").filter(
+        pk=debt_id
+    ).first()
     return render(
-        request,
-        "debts/debt_detail.html",
-        {"debt": debt},
+        request, "debts/debt_detail.html", {"debt": debt},
         status=404 if debt is None else 200,
     )
 
 
 def statistics(request):
-    connection = get_connection()
-    try:
-        stats = connection.execute(STATISTICS_SQL).fetchall()
-    finally:
-        connection.close()
+    stats = Student.objects.annotate(
+        debts_count=Count("debts", filter=Q(debts__is_closed=False))
+    ).order_by("-debts_count", "name")
+    totals = Debt.objects.aggregate(total=Count("id"))
     return render(
-        request,
-        "debts/statistics.html",
-        {"statistics": stats},
+        request, "debts/statistics.html",
+        {"statistics": stats, "total_debts": totals["total"]},
     )

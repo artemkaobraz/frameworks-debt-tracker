@@ -1,9 +1,11 @@
-import sqlite3
 from unittest.mock import patch
 
 from django.template.loader import get_template
 from django.test import Client
 from django.test import override_settings
+
+from debts.models import Debt
+from students.models import Student
 
 
 def test_templates_are_available_in_expected_locations() -> None:
@@ -84,31 +86,11 @@ def test_missing_objects_return_404_with_detail_templates() -> None:
 
 
 def test_empty_collections_have_messages() -> None:
-    def empty_connection():
-        connection = sqlite3.connect(":memory:")
-        connection.row_factory = sqlite3.Row
-        connection.executescript(
-            """
-            CREATE TABLE students (
-                id INTEGER PRIMARY KEY, name TEXT, group_number TEXT,
-                record_book TEXT
-            );
-            CREATE TABLE disciplines (
-                id INTEGER PRIMARY KEY, name TEXT, teacher TEXT,
-                semester INTEGER
-            );
-            CREATE TABLE debts (
-                id INTEGER PRIMARY KEY, student_id INTEGER,
-                discipline_id INTEGER, date_created TEXT,
-                is_closed INTEGER
-            );
-            """
-        )
-        return connection
-
-    with patch("students.views.get_connection", empty_connection):
+    with patch("students.views.Student.objects.annotate",
+               return_value=Student.objects.none()):
         students_response = Client().get("/students/")
-    with patch("debts.views.get_connection", empty_connection):
+    with patch("debts.views.Debt.objects.select_related",
+               return_value=Debt.objects.none()):
         debts_response = Client().get("/debts/")
 
     assert "Всего студентов: 0" in students_response.content.decode()

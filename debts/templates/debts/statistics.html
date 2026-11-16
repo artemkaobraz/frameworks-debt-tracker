@@ -5,7 +5,7 @@
 {% if statistics %}
 <ul class="list">
     {% for item in statistics %}
-    <li>{{ item.student_name }}. Активных задолженностей: {{ item.debts_count }}</li>
+    <li>{{ item.name }}. Активных задолженностей: {{ item.debts_count }}</li>
     {% endfor %}
 </ul>
 {% else %}

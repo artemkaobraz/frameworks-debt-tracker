@@ -57,7 +57,7 @@ def test_schema_foreign_keys_and_imported_data() -> None:
     finally:
         connection.close()
 
-    assert tables == {"students", "disciplines", "debts"}
+    assert {"students", "disciplines", "debts"} <= tables
     assert {row["table"] for row in foreign_keys} == {
         "students", "disciplines"
     }
